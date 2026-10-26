@@ -1,0 +1,14 @@
+MUNDINHO DO VIVI — 0.5.0 · TESTE EM FAMÍLIA
+
+Nuvino, ilustrações, desenhos para colorir e gráficos de jogos: recursos vetoriais originais criados para este projeto.
+
+Kotlin, Kotlin Coroutines, Jetpack Compose, Activity, Lifecycle, Navigation, DataStore, Core e CameraX: Google, JetBrains e contribuidores; Apache License 2.0.
+https://www.apache.org/licenses/LICENSE-2.0
+
+ML Kit Face Detection: Google; biblioteca Android distribuída pelo Google Maven, com modelo facial incluído. Licenças e avisos dos artefatos são mantidos nas dependências. O processamento de rosto acontece apenas no aparelho. O detector fornece contornos e pontos faciais; não é um modelo de biometria para identificar pessoas.
+https://developers.google.com/ml-kit/vision/face-detection
+Termos do detector e modelos: https://developers.google.com/ml-kit/terms
+
+Voz: pacote de texto para voz pt-BR offline instalado no Android. Nenhuma gravação de voz humana é distribuída como se fosse narração própria.
+
+Os sons reais têm créditos individuais abaixo. Ritmos, sintetizadores e efeitos digitais são criados pelo motor de áudio do aplicativo, e não representam gravações de animais.
