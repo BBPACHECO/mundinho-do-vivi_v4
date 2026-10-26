@@ -15,7 +15,11 @@ Esta versão é para o primeiro teste no Galaxy A57. Há atividades implementada
 
 ## Instalar o APK no Galaxy A57
 
-Baixe a entrega APK/ZIP fornecida na conversa. Caso seja ZIP, em **Meus Arquivos → Downloads**, extraia e abra o `.apk`. Se o Android solicitar, autorize a instalação somente pela fonte usada para abrir esse arquivo. Esta versão usa assinatura debug para testes e não deve ser enviada à loja.
+Use o [download direto do APK no GitHub](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.5.0-familia/Mundinho-do-Vivi-0.5-Galaxy-A57.apk), sem precisar entrar na conta. Há também um [ZIP menor para baixar e extrair](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.5.0-familia/Mundinho-do-Vivi-0.5-instalar.zip). A [página da versão de teste](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/tag/v0.5.0-familia) reúne os arquivos e seus hashes.
+
+Em **Meus Arquivos → Downloads**, abra o `.apk`; se baixou o ZIP, extraia primeiro. Se o Android solicitar, autorize a instalação somente pela fonte usada para abrir esse arquivo. Esta versão usa assinatura debug para testes e não deve ser enviada à loja.
+
+A pré-release reaproveita o APK da execução validada `40363899011` do GitHub Actions, sem recompilar. O workflow manual `entregar-apk-teste.yml` verifica origem, assinatura e alinhamento, prepara os arquivos e confere o download público sem autenticação. Ele é específico para essa entrega e recusa sobrescrever uma versão já publicada. O workflow normal de compilação continua guardando artefatos por 14 dias; o download da pré-release não depende desse prazo.
 
 O aplicativo só pede **câmera**, depois de tocar em Ligar câmera. Não pede microfone, localização, internet ou acesso amplo a arquivos. Para importar, o responsável escolhe o arquivo no seletor do Android; para salvar criações, a ação é explícita. Fotos/rostos ficam no aparelho. Créditos e licenças dos sons estão na área adulta.
 

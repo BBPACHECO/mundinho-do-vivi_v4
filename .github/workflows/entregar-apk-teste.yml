@@ -1,0 +1,78 @@
+name: Disponibilizar APK de teste para download direto
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: entrega-v0.5.0-familia
+  cancel-in-progress: false
+
+jobs:
+  entregar:
+    if: github.repository == 'BBPACHECO/mundinho-do-vivi_v4' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: BBPACHECO/mundinho-do-vivi_v4
+      TAG: v0.5.0-familia
+    steps:
+      - name: Confirmar compilação validada e rascunho de entrega
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/actions/runs/40363899011" --jq '.status == "completed" and .conclusion == "success" and .head_sha == "155f42e0a0768dd782fbdd869519d3526e54c41b"')" = true
+          test "$(gh api "repos/$GH_REPO/releases/424672035" --jq '.draft and .prerelease and .tag_name == "v0.5.0-familia" and .target_commitish == "155f42e0a0768dd782fbdd869519d3526e54c41b" and (.assets | length) == 0')" = true
+      - name: Recuperar o APK existente sem recompilar
+        uses: actions/download-artifact@v4
+        with:
+          name: Mundinho-do-Vivi-0.5-Galaxy-A57
+          run-id: 40363899011
+          github-token: ${{ github.token }}
+          path: apk-validado
+      - name: Conferir assinatura e preparar os arquivos
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify apk-validado/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 apk-validado/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging apk-validado/app-debug.apk > /tmp/vivi-apk-info.txt
+          grep -F "package: name='com.mundodedescobertas.app.debug' versionCode='5' versionName='0.5.0-familia'" /tmp/vivi-apk-info.txt
+          grep -Fx "native-code: 'arm64-v8a'" /tmp/vivi-apk-info.txt
+          mkdir entrega
+          cp apk-validado/app-debug.apk entrega/Mundinho-do-Vivi-0.5-Galaxy-A57.apk
+          cat > entrega/COMO_INSTALAR.txt <<'INSTRUCOES'
+          Mundinho do Vivi 0.5 - teste familiar no Galaxy A57
+
+          1. Extraia este ZIP em Meus Arquivos > Downloads.
+          2. Abra Mundinho-do-Vivi-0.5-Galaxy-A57.apk.
+          3. Se solicitado, permita instalar pela fonte usada para abrir o arquivo.
+          4. Toque em Instalar e depois em Abrir.
+
+          Este APK usa assinatura debug do GitHub Actions. Prefira atualizacoes
+          desta mesma origem para preservar dados. Nao foi publicado na Play.
+          Testes em celular fisico ainda precisam ser realizados.
+          INSTRUCOES
+          cd entrega
+          zip -q Mundinho-do-Vivi-0.5-instalar.zip Mundinho-do-Vivi-0.5-Galaxy-A57.apk COMO_INSTALAR.txt
+          sha256sum Mundinho-do-Vivi-0.5-Galaxy-A57.apk Mundinho-do-Vivi-0.5-instalar.zip > SHA256SUMS.txt
+      - name: Publicar pré-release com os arquivos de teste
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" entrega/Mundinho-do-Vivi-0.5-Galaxy-A57.apk entrega/Mundinho-do-Vivi-0.5-instalar.zip entrega/SHA256SUMS.txt
+          test "$(gh api "repos/$GH_REPO/releases/424672035" --jq '(.assets | length) == 3 and all(.assets[]; .state == "uploaded" and .size > 0)')" = true
+          gh release edit "$TAG" --draft=false --prerelease --latest=false
+      - name: Verificar download público sem login
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/$GH_REPO/releases/download/$TAG/Mundinho-do-Vivi-0.5-Galaxy-A57.apk"
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 "$url" --output /tmp/vivi-download-publico.apk
+          cmp entrega/Mundinho-do-Vivi-0.5-Galaxy-A57.apk /tmp/vivi-download-publico.apk
+          printf 'Download público conferido; APK idêntico ao artefato validado.\n\n[Baixar APK](%s)\n' "$url" >> "$GITHUB_STEP_SUMMARY"
