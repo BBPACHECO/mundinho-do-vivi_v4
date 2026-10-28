@@ -1,4 +1,4 @@
-# Estado — versão 0.6.0 para teste familiar
+# Estado — versão 0.6.1 para teste familiar
 
 As cinco áreas abrem atividades Android nativas. O novo **Meu Miniestúdio** fica dentro de **Caretas Divertidas**, mantendo os cinco acessos da tela inicial. O código da versão 0.6 inclui o editor; a publicação de um APK assinado e os resultados finais devem ser conferidos nas notas da entrega e em [VALIDACAO](VALIDACAO.md).
 

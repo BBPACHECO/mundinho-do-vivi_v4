@@ -18,8 +18,8 @@ android {
         applicationId familyApk ? 'com.mundodedescobertas.app.familia' : 'com.mundodedescobertas.app'
         minSdk 29
         targetSdk 35
-        versionCode 6
-        versionName '0.6.0-familia'
+        versionCode 7
+        versionName '0.6.1-familia'
         manifestPlaceholders = [appLabel: familyApk ? 'Mundinho do Vivi • Família' : '@string/app_name']
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         if (project.hasProperty('galaxyApk')) { ndk { abiFilters 'arm64-v8a' } }

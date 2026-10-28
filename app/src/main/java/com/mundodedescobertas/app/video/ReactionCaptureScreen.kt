@@ -107,7 +107,7 @@ fun ReactionCaptureScreen(
             prepare()
         }
     }
-    LaunchedEffect(player, settings.masterVolume) { player.volume = settings.masterVolume.coerceIn(0f, 1f) }
+    LaunchedEffect(player, settings.effectiveEffectsVolume) { player.volume = settings.effectiveEffectsVolume }
 
     fun stopRecording() {
         if (recording || starting) {

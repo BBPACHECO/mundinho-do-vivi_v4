@@ -1,4 +1,4 @@
-# Meu Miniestúdio — editor de vídeo 0.6
+# Meu Miniestúdio — editor de vídeo 0.6.1
 
 Abra **Caretas Divertidas → Meu Miniestúdio**. O editor mantém o processamento no aparelho e cria um novo arquivo; o vídeo escolhido não é sobrescrito.
 
@@ -11,7 +11,7 @@ Abra **Caretas Divertidas → Meu Miniestúdio**. O editor mantém o processamen
 5. Ouça os sons disponíveis e toque em **Colocar** no momento escolhido: arroto, scratch, bolha eletrônica, twang, gota eletrônica e sino. Há até 12 inserções. Os WAVs ficam no aplicativo e mantêm os créditos CC0 da biblioteca do DJ. Cada inserção pode ser retirada.
 6. Escolha uma voz: original, neném, grave ou robô. Os filtros de neném e grave mudam o tom sem acelerar a reprodução. O robô aplica modulação digital. O efeito modifica o áudio original inteiro e a voz da janelinha, incluindo músicas e ruídos; não identifica nem isola a fala. Sons acrescentados conservam seu som original.
 
-O volume original pode ser ajustado. Caso o vídeo não tenha áudio, o filtro de voz só será audível se houver uma gravação da câmera com voz.
+A reprodução na edição e durante a reação respeita o volume de efeitos e o Modo Calminho dos responsáveis. O volume original a incorporar no arquivo salvo pode ser ajustado separadamente. Caso o vídeo não tenha áudio, o filtro de voz só será audível se houver uma gravação da câmera com voz.
 
 ## Gravar a janelinha da câmera
 

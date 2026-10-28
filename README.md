@@ -1,4 +1,4 @@
-# Mundinho do Vivi — 0.6.0 · teste em família
+# Mundinho do Vivi — 0.6.1 · teste em família
 
 Aplicativo Android **nativo em Kotlin e Jetpack Compose**, com cinco ambientes locais. Requer Android 10 ou superior (API 29); compilação e target SDK 35. Não usa HTML ou WebView.
 
@@ -18,7 +18,7 @@ A versão 0.6 acrescenta o **Meu Miniestúdio**, dentro de **Caretas Divertidas*
 
 A nova edição de teste usa o identificador **`com.mundodedescobertas.app.familia`** e aparece no celular como **Mundinho do Vivi • Família**. Ela instala ao lado da versão 0.5, preservando o aplicativo anterior e suas criações. Os dados das duas edições ficam separados; não há migração automática. Mantenha a versão antiga enquanto houver criações que queira guardar.
 
-Downloads da edição Família 0.6: [APK para o Galaxy A57](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.6.0-familia/Mundinho-do-Vivi-0.6-Galaxy-A57.apk), [instalador compactado](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.6.0-familia/Mundinho-do-Vivi-0.6-instalar.zip) e [notas da pré-release](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/tag/v0.6.0-familia). Os links ficam disponíveis quando o workflow de publicação termina com sucesso.
+Downloads da edição Família 0.6.1: [APK para o Galaxy A57](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.6.1-familia/Mundinho-do-Vivi-0.6.1-Galaxy-A57.apk), [instalador compactado](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/download/v0.6.1-familia/Mundinho-do-Vivi-0.6.1-instalar.zip) e [notas da pré-release](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases/tag/v0.6.1-familia). Os links ficam disponíveis quando o workflow de publicação termina com sucesso.
 
 Abra **Meus Arquivos → Downloads** e toque no APK. Se baixou o ZIP, extraia primeiro. Autorize a instalação somente pela fonte usada para abrir o arquivo, se o Android solicitar. No aplicativo, entre em **Caretas Divertidas → Meu Miniestúdio**.
 

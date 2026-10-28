@@ -1,6 +1,6 @@
-# Validação — 0.6.0-familia — 27/10/2026
+# Validação — 0.6.1-familia — 27/10/2026
 
-Ambiente Linux, JDK 17, Gradle 8.11.1, AGP 8.9.2, Kotlin 2.1.20 e Android SDK 35/Build Tools 35.0.0. Data em horário de Brasília. O [relatório anterior](HISTORICO_VALIDACAO_0_5.md) preserva a evidência da versão 0.5.
+Ambiente Linux, JDK 17, Gradle 8.11.1, AGP 8.9.2, Kotlin 2.1.20 e Android SDK 35/Build Tools 35.0.0. Data em horário de Brasília. O [relatório anterior](HISTORICO_VALIDACAO_0_5.md) preserva a evidência da versão 0.5; o [histórico 0.6.0](HISTORICO_VALIDACAO_0_6_0.md) registra a primeira entrega do editor.
 
 ## Verificações executadas
 
@@ -8,7 +8,7 @@ Ambiente Linux, JDK 17, Gradle 8.11.1, AGP 8.9.2, Kotlin 2.1.20 e Android SDK 35
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --offline --no-daemon --max-workers=2
 ```
 
-O comando passou após a recuperação do ambiente e novamente após ajustar o enquadramento vertical da tela de gravação. A segunda execução terminou em 1 min 22 s. A passagem anterior à interrupção da nuvem também havia executado 57 testes; ela não foi usada para presumir a validade das alterações posteriores.
+O comando passou após a recuperação do ambiente e novamente após ajustar o enquadramento vertical da tela de gravação. A validação base da versão 0.6.0 terminou em 1 min 22 s; o patch 0.6.1 aplica o volume efetivo dos efeitos também à reprodução durante a gravação da reação. O patch passou novamente nos 57 testes, compilação e lint em 1 min 18 s. A compilação Família assinada levou 44 s e sua assinatura e alinhamento foram conferidos. A passagem anterior à interrupção da nuvem também havia executado 57 testes; ela não foi usada para presumir a validade das alterações posteriores.
 
 | Verificação | Resultado observado |
 |---|---|
@@ -25,7 +25,7 @@ O comando passou após a recuperação do ambiente e novamente após ajustar o e
 
 Também foi compilado o APK Família arm64 com `-PfamilyApk -PgalaxyApk :app:assembleRelease`, usando a chave privada de teste local por variáveis de ambiente. Assinatura conferida com `apksigner` e comparada à impressão digital pública em `FAMILIA_CERT_SHA256.txt`; alinhamento ZIP de 16 KB e integridade do arquivo confirmados. As cinco bibliotecas arm64 têm segmentos ELF LOAD alinhados a pelo menos `0x4000`. Isso não substitui execução em um aparelho com páginas de 16 KB.
 
-O manifesto final informa pacote `com.mundodedescobertas.app.familia`, versão 6 / `0.6.0-familia`, Android mínimo 29 e alvo 35. Permissões: câmera, microfone opcional e a permissão interna AndroidX. Não há internet, localização ou acesso amplo a arquivos. Câmera e microfone foram declarados como hardware opcional.
+O manifesto final informa pacote `com.mundodedescobertas.app.familia`, versão 7 / `0.6.1-familia`, Android mínimo 29 e alvo 35. Permissões: câmera, microfone opcional e a permissão interna AndroidX. Não há internet, localização ou acesso amplo a arquivos. Câmera e microfone foram declarados como hardware opcional.
 
 ## Tentativa de testes em Android real emulado
 
@@ -43,4 +43,4 @@ O filtro de voz afeta a faixa original inteira e a voz da reação; não há sep
 
 Consulte [CHECKLIST_GALAXY_A57.md](CHECKLIST_GALAXY_A57.md) e [VIDEO_EDITOR.md](VIDEO_EDITOR.md). Os demais recursos e limites do aplicativo estão em [ESTADO_DO_PROJETO.md](ESTADO_DO_PROJETO.md).
 
-Relatórios locais: `app/build/reports/v0.6/`, `app/build/reports/tests/testDebugUnitTest/`, `app/build/reports/lint-results-debug.html` e `app/build/reports/ui/`. A distribuição é uma pré-release familiar assinada para testes, sem publicação na Google Play.
+Relatórios locais: `app/build/reports/v0.6.1/`, `app/build/reports/tests/testDebugUnitTest/`, `app/build/reports/lint-results-debug.html` e `app/build/reports/ui/`. A distribuição é uma pré-release familiar assinada para testes, sem publicação na Google Play.

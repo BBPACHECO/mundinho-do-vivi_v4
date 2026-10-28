@@ -35,7 +35,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: relatorios-0.6
+          name: relatorios-0.6.1
           path: |
             app/build/reports/tests/
             app/build/reports/lint-results-debug.*
@@ -43,7 +43,7 @@ jobs:
       - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
-          name: Mundinho-do-Vivi-0.6-debug-Galaxy-A57
+          name: Mundinho-do-Vivi-0.6.1-debug-Galaxy-A57
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
@@ -109,16 +109,16 @@ jobs:
           test "$actual" = "$expected"
           "$tools/zipalign" -c -P 16 4 "$apk"
           "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/vivi-family-apk-info.txt"
-          grep -F "package: name='com.mundodedescobertas.app.familia' versionCode='6' versionName='0.6.0-familia'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          grep -F "package: name='com.mundodedescobertas.app.familia' versionCode='7' versionName='0.6.1-familia'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
           grep -Fx "native-code: 'arm64-v8a'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
           mkdir -p entrega
-          cp "$apk" entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk
+          cp "$apk" entrega/Mundinho-do-Vivi-0.6.1-Galaxy-A57.apk
       - name: Guardar APK Família
         if: steps.signing.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: Mundinho-do-Vivi-0.6-Familia-Galaxy-A57
-          path: entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk
+          name: Mundinho-do-Vivi-0.6.1-Familia-Galaxy-A57
+          path: entrega/Mundinho-do-Vivi-0.6.1-Galaxy-A57.apk
           if-no-files-found: error
           retention-days: 14
       - name: Remover material de assinatura do runner
