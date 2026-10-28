@@ -1,0 +1,171 @@
+name: Publicar APK Família 0.6 para download direto
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: publicar-v0.6.0-familia
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    if: github.repository == 'BBPACHECO/mundinho-do-vivi_v4' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      GH_REPO: BBPACHECO/mundinho-do-vivi_v4
+      TAG: v0.6.0-familia
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Conferir SDK Android
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${ANDROID_HOME:-}"
+          test -f "$ANDROID_HOME/platforms/android-35/android.jar"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/aapt"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Impedir sobrescrita de uma entrega existente
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --json tagName > /dev/null 2>&1; then
+            echo '::error::Esta versão já possui uma entrega ou rascunho. Inspecione-a antes de uma nova execução; arquivos não serão sobrescritos.'
+            exit 1
+          fi
+      - name: Compilar, testar e analisar antes de distribuir
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=2
+      - name: Carregar assinatura de teste persistente
+        shell: bash
+        env:
+          VIVI_FAMILY_KEYSTORE_BASE64: ${{ secrets.VIVI_FAMILY_KEYSTORE_BASE64 }}
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [[ -z "$VIVI_FAMILY_KEYSTORE_BASE64" || -z "$VIVI_FAMILY_STORE_PASSWORD" || -z "$VIVI_FAMILY_KEY_ALIAS" ]]; then
+            echo '::error::Configure os três secrets VIVI_FAMILY de assinatura antes de publicar.'
+            exit 1
+          fi
+          signing_path="$RUNNER_TEMP/vivi-family-signing.p12"
+          printf '%s' "$VIVI_FAMILY_KEYSTORE_BASE64" | base64 --decode > "$signing_path"
+          test -s "$signing_path"
+          echo "VIVI_FAMILY_KEYSTORE_PATH=$signing_path" >> "$GITHUB_ENV"
+      - name: Compilar edição Família arm64
+        env:
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: ./gradlew -PfamilyApk -PgalaxyApk :app:assembleRelease --no-daemon --max-workers=2
+      - name: Validar APK e montar entrega
+        shell: bash
+        env:
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          keytool -exportcert -alias "$VIVI_FAMILY_KEY_ALIAS" -keystore "$VIVI_FAMILY_KEYSTORE_PATH" -storepass:env VIVI_FAMILY_STORE_PASSWORD -file "$RUNNER_TEMP/vivi-family-cert.der"
+          expected=$(sha256sum "$RUNNER_TEMP/vivi-family-cert.der" | cut -d ' ' -f 1)
+          "$tools/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/vivi-family-apk-cert.txt"
+          actual=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/vivi-family-apk-cert.txt")
+          test "$actual" = "$expected"
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          grep -F "package: name='com.mundodedescobertas.app.familia' versionCode='6' versionName='0.6.0-familia'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          grep -Fx "native-code: 'arm64-v8a'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          mkdir entrega
+          cp "$apk" entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk
+          cat > entrega/COMO_INSTALAR.txt <<'INSTRUCOES'
+          Mundinho do Vivi 0.6 - edicao Familia para teste no Galaxy A57
+
+          1. Extraia este ZIP em Meus Arquivos > Downloads.
+          2. Abra Mundinho-do-Vivi-0.6-Galaxy-A57.apk.
+          3. Se solicitado, permita instalar pela fonte usada para abrir o arquivo.
+          4. Toque em Instalar e depois em Abrir.
+
+          Esta edicao aparece como "Mundinho do Vivi - Familia" no celular e usa
+          um identificador separado: com.mundodedescobertas.app.familia.
+          Ela instala ao lado da edicao 0.5; nao desinstale a anterior para guardar
+          suas criacoes. Os dados de cada edicao ficam separados e nao sao copiados
+          automaticamente entre os aplicativos.
+
+          A assinatura de teste e persistente para as proximas atualizacoes desta
+          edicao. A chave de teste nao e uma chave de producao da Google Play.
+          Instalacao, camera, microfone e exportacao ainda precisam de validacao
+          no seu aparelho. Nao foi publicado na Google Play.
+          INSTRUCOES
+          cd entrega
+          zip -q Mundinho-do-Vivi-0.6-instalar.zip Mundinho-do-Vivi-0.6-Galaxy-A57.apk COMO_INSTALAR.txt
+          sha256sum Mundinho-do-Vivi-0.6-Galaxy-A57.apk Mundinho-do-Vivi-0.6-instalar.zip > SHA256SUMS.txt
+      - name: Preparar notas da pré-release
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/vivi-family-release.md" <<'NOTAS'
+          Edição **0.6.0-familia** de teste para o Galaxy A57 (Android 10+, arm64).
+
+          ## Baixar e instalar
+
+          Baixe **Mundinho-do-Vivi-0.6-Galaxy-A57.apk** abaixo, abra em **Meus Arquivos → Downloads** e toque em **Instalar**. O download público não exige conta do GitHub. O ZIP `instalar` contém o mesmo APK compactado.
+
+          Esta edição aparece como **Mundinho do Vivi • Família** e instala **ao lado da 0.5**, com identificador próprio `com.mundodedescobertas.app.familia`. A versão antiga e suas criações são preservadas; os dados das duas edições ficam separados, sem migração automática. Não é necessário desinstalar a versão anterior.
+
+          A assinatura desta edição usa uma chave de teste persistente, guardada nos secrets do repositório. Ela permite futuras atualizações da edição Família com a mesma chave. Não é uma chave de produção para a Google Play.
+
+          ## Mini editor de vídeo
+
+          Dentro de **Caretas Divertidas**, há um editor para escolher um vídeo local, alterar cores, colocar emojis e sons, gravar uma janelinha da câmera enquanto o vídeo passa e aplicar filtros de voz como neném, grave e robô. As alterações são renderizadas no arquivo MP4 antes de salvar na galeria. Todo processamento ocorre no aparelho.
+
+          A câmera e o microfone são opcionais; o microfone só é solicitado ao escolher gravar a própria voz. O filtro de voz altera o áudio original inteiro, incluindo música; não isola automaticamente a fala.
+
+          ## Validação e limites
+
+          Esta entrega só é publicada após compilação, testes automatizados e lint. A assinatura do APK é comparada ao certificado da chave de teste e o alinhamento ZIP é verificado. O workflow confere também o download público sem autenticação, comparando-o byte a byte com o APK gerado.
+
+          Os testes Android de dispositivo foram compilados. Instalação, codecs, gravação, câmera, microfone, sincronização e exportação em um Galaxy A57 físico ainda precisam de validação; não foram aprovados por um teste em nuvem.
+
+          Esta é uma pré-release familiar, sem publicação na Google Play. Veja o README, `docs/ESTADO_DO_PROJETO.md` e o checklist do Galaxy A57 para os limites conhecidos e recursos ainda pendentes do projeto original. `SHA256SUMS.txt` contém os hashes do APK e do ZIP.
+          NOTAS
+      - name: Criar rascunho com APK e publicar pré-release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk entrega/Mundinho-do-Vivi-0.6-instalar.zip entrega/SHA256SUMS.txt --draft --prerelease --target "$GITHUB_SHA" --title 'Mundinho do Vivi 0.6 — editor de vídeo e edição Família' --notes-file "$RUNNER_TEMP/vivi-family-release.md"
+          test "$(gh release view "$TAG" --json isDraft,isPrerelease,assets --jq '.isDraft and .isPrerelease and (.assets | length) == 3 and all(.assets[]; .state == "uploaded" and .size > 0)')" = true
+          gh release edit "$TAG" --draft=false --prerelease --latest=false
+      - name: Conferir download público sem login
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/$GH_REPO/releases/download/$TAG/Mundinho-do-Vivi-0.6-Galaxy-A57.apk"
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 "$url" --output "$RUNNER_TEMP/vivi-family-public.apk"
+          cmp entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk "$RUNNER_TEMP/vivi-family-public.apk"
+          printf 'APK Família publicado; download público idêntico ao arquivo validado.\n\n[Baixar APK](%s)\n' "$url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Guardar relatórios de validação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-publicacao-0.6-familia
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-debug.*
+            app/build/reports/ui/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Remover material de assinatura do runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/vivi-family-signing.p12" "$RUNNER_TEMP/vivi-family-cert.der" "$RUNNER_TEMP/vivi-family-apk-cert.txt"

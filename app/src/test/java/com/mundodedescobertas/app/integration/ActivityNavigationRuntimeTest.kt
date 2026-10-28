@@ -39,6 +39,14 @@ class ActivityNavigationRuntimeTest {
                 compose.onAllNodesWithText("Preparando os sons offline…").fetchSemanticsNodes().isEmpty()
             }
             capture(names.getValue(title))
+            if (title == "Caretas Divertidas") {
+                compose.onNodeWithText("Meu Miniestúdio").performClick()
+                compose.onNodeWithText("Escolher um vídeo").assertIsEnabled()
+                compose.onNodeWithText("Cores, emojis e brincadeiras").assertExists()
+                capture("video-editor")
+                compose.onAllNodesWithText("Voltar").onFirst().performClick()
+                compose.onNodeWithText("Meu Miniestúdio").assertExists()
+            }
             compose.onAllNodesWithText("Voltar").onFirst().performClick()
             compose.onNodeWithTag("home_areas").assertExists()
         }

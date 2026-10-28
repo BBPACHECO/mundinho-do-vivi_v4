@@ -1,9 +1,12 @@
-MUNDINHO DO VIVI — 0.5.0 · TESTE EM FAMÍLIA
+MUNDINHO DO VIVI — 0.6.0 · TESTE EM FAMÍLIA
 
 Nuvino, ilustrações, desenhos para colorir e gráficos de jogos: recursos vetoriais originais criados para este projeto.
 
 Kotlin, Kotlin Coroutines, Jetpack Compose, Activity, Lifecycle, Navigation, DataStore, Core e CameraX: Google, JetBrains e contribuidores; Apache License 2.0.
 https://www.apache.org/licenses/LICENSE-2.0
+
+AndroidX Media3 (ExoPlayer, Transformer e efeitos de áudio/vídeo): Google e contribuidores; Apache License 2.0. Decodificação, composição e exportação de vídeo são feitas no aparelho. Os emojis usam os glifos instalados no Android; a aparência varia conforme o sistema.
+https://github.com/androidx/media
 
 ML Kit Face Detection: Google; biblioteca Android distribuída pelo Google Maven, com modelo facial incluído. Licenças e avisos dos artefatos são mantidos nas dependências. O processamento de rosto acontece apenas no aparelho. O detector fornece contornos e pontos faciais; não é um modelo de biometria para identificar pessoas.
 https://developers.google.com/ml-kit/vision/face-detection

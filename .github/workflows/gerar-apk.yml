@@ -35,7 +35,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: relatorios-0.5-familia
+          name: relatorios-0.6
           path: |
             app/build/reports/tests/
             app/build/reports/lint-results-debug.*
@@ -43,7 +43,85 @@ jobs:
       - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
-          name: Mundinho-do-Vivi-0.5-Galaxy-A57
+          name: Mundinho-do-Vivi-0.6-debug-Galaxy-A57
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+  familia:
+    name: APK Família com assinatura de teste persistente
+    needs: android
+    if: github.repository == 'BBPACHECO/mundinho-do-vivi_v4' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Conferir e carregar assinatura da edição Família
+        id: signing
+        shell: bash
+        env:
+          VIVI_FAMILY_KEYSTORE_BASE64: ${{ secrets.VIVI_FAMILY_KEYSTORE_BASE64 }}
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          if [[ -z "$VIVI_FAMILY_KEYSTORE_BASE64" || -z "$VIVI_FAMILY_STORE_PASSWORD" || -z "$VIVI_FAMILY_KEY_ALIAS" ]]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Assinatura Família ainda não configurada; APK debug e testes continuam disponíveis.'
+            exit 0
+          fi
+          signing_path="$RUNNER_TEMP/vivi-family-signing.p12"
+          printf '%s' "$VIVI_FAMILY_KEYSTORE_BASE64" | base64 --decode > "$signing_path"
+          test -s "$signing_path"
+          echo "VIVI_FAMILY_KEYSTORE_PATH=$signing_path" >> "$GITHUB_ENV"
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v5
+        if: steps.signing.outputs.ready == 'true'
+      - uses: actions/setup-java@v5
+        if: steps.signing.outputs.ready == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.signing.outputs.ready == 'true'
+      - name: Compilar APK Família arm64
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: ./gradlew -PfamilyApk -PgalaxyApk :app:assembleRelease --no-daemon --max-workers=2
+      - name: Conferir assinatura, pacote e alinhamento
+        if: steps.signing.outputs.ready == 'true'
+        shell: bash
+        env:
+          VIVI_FAMILY_STORE_PASSWORD: ${{ secrets.VIVI_FAMILY_STORE_PASSWORD }}
+          VIVI_FAMILY_KEY_ALIAS: ${{ secrets.VIVI_FAMILY_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          keytool -exportcert -alias "$VIVI_FAMILY_KEY_ALIAS" -keystore "$VIVI_FAMILY_KEYSTORE_PATH" -storepass:env VIVI_FAMILY_STORE_PASSWORD -file "$RUNNER_TEMP/vivi-family-cert.der"
+          expected=$(sha256sum "$RUNNER_TEMP/vivi-family-cert.der" | cut -d ' ' -f 1)
+          "$tools/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/vivi-family-apk-cert.txt"
+          actual=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/vivi-family-apk-cert.txt")
+          test "$actual" = "$expected"
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          grep -F "package: name='com.mundodedescobertas.app.familia' versionCode='6' versionName='0.6.0-familia'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          grep -Fx "native-code: 'arm64-v8a'" "$RUNNER_TEMP/vivi-family-apk-info.txt"
+          mkdir -p entrega
+          cp "$apk" entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk
+      - name: Guardar APK Família
+        if: steps.signing.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mundinho-do-Vivi-0.6-Familia-Galaxy-A57
+          path: entrega/Mundinho-do-Vivi-0.6-Galaxy-A57.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remover material de assinatura do runner
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/vivi-family-signing.p12" "$RUNNER_TEMP/vivi-family-cert.der" "$RUNNER_TEMP/vivi-family-apk-cert.txt"

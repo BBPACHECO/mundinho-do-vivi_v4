@@ -1,31 +1,46 @@
-# Validação — 0.5.0-familia — 26/10/2026
+# Validação — 0.6.0-familia — 27/10/2026
 
-Executado em Linux/JDK17completo, GradleWrapper8.11.1, AGP8.9.2, Kotlin2.1.20, AndroidSDK35/BuildTools35.0.0.
+Ambiente Linux, JDK 17, Gradle 8.11.1, AGP 8.9.2, Kotlin 2.1.20 e Android SDK 35/Build Tools 35.0.0. Data em horário de Brasília. O [relatório anterior](HISTORICO_VALIDACAO_0_5.md) preserva a evidência da versão 0.5.
 
-Comando final: `./gradlew -PgalaxyApk :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=4`.
+## Verificações executadas
 
-| Verificação | Resultado executado |
+```sh
+./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --offline --no-daemon --max-workers=2
+```
+
+O comando passou após a recuperação do ambiente e novamente após ajustar o enquadramento vertical da tela de gravação. A segunda execução terminou em 1 min 22 s. A passagem anterior à interrupção da nuvem também havia executado 57 testes; ela não foi usada para presumir a validade das alterações posteriores.
+
+| Verificação | Resultado observado |
 |---|---|
-| Compilação e empacotamento arm64 | Sucesso; versão5 / 0.5.0-familia |
-| Testes totais | **49 executados, 0falhas, 0erros, 0ignorados** |
-| Regras, persistência, pixels, catálogo, física, áudio/WAV e geometria | 35 testes passaram |
-| Interações Compose nativas/Robolectric API35 | 14 testes passaram |
-| Navegação | Cinco destinos/voltar, mascote e proteção adulta exercitados |
-| Aprendizagem |26letras,10palavrasA/falas solicitadas,31números,zero,contagem5emgrupos3+2,semduplicação |
-| Jogos |8jogos abrem/iniciam;bolhas respondem;pausa e sandboxsalvo/restaurado por toque |
-| Pintura |PNGmodificado salvo/restaurado;importação válida e rejeição inválida sem lixo |
-| Câmera virtual | Desligada e sem fotografar/trocar antes de autorização explícita |
-| Renderização visual |6PNGs da Activity real via decorView.draw(Canvas), configuração simulada393×852dp |
-| Análise Android/lint |0erros;6avisos de compatibilidade ChromeOS, espaço em disco e estiloKTX |
-| APK/assinatura |Verificação apksigner válida e alinhamento ZIP16KB confirmado |
-| Bibliotecas arm64 |5ELFs com segmentosLOAD alinhados a0x4000; não substitui execução em dispositivo16KB |
-| Permissões finais |CAMERA + permissão interna de assinaturaAndroidX;semInternet,microfone,localização ou arquivos amplos |
-| Modelo facial offline | Arquivos de modelo e JNI do MLKit encontrados no artefato empacotado |
-| Áudios |32WAVsCC0:hashesSHA256 batem com créditos;PCMmono48kHz/16bit,dadosnão vazios |
-| Testes instrumentados Android |Compilados; **não executados em celular** |
+| Compilação debug e APK de testes Android | Sucesso |
+| Testes locais | **57 executados, zero falhas, erros ou ignorados** |
+| Regras, arquivos, persistência, física, áudio e geometria | 43 testes passaram |
+| Interações Compose/Robolectric API 35 | 14 testes passaram |
+| Editor: importação | Cópia no limite, rejeição de excesso/arquivo vazio e cancelamento passaram |
+| Editor: processamento de áudio | Robô preserva canais e fase entre buffers; ganho e silêncio mantêm as amostras esperadas |
+| Editor: geometria | Resolução par limitada a HD, sem ampliar entradas menores; início/fim da reação testados |
+| Navegação | Cinco ambientes, entrada no Miniestúdio e retorno exercitados na Activity real |
+| Renderização visual | Sete capturas da Activity em configuração simulada de 393 × 852 dp, incluindo o editor sem vídeo escolhido |
+| Lint | Zero erros e 12 avisos: compatibilidade ChromeOS, consulta de espaço e sugestões de estilo KTX |
 
-As49verificações de software não provam latência sonora, pronúncia/naturalidade TTS, precisão/fotografia de rostos, gesto de2dedos, galeria/seletor reais,60FPS,temperatura ou conforto sensorial no GalaxyA57. Esses testes físicos estão no checklist e ainda não foram executados.
+Também foi compilado o APK Família arm64 com `-PfamilyApk -PgalaxyApk :app:assembleRelease`, usando a chave privada de teste local por variáveis de ambiente. Assinatura conferida com `apksigner` e comparada à impressão digital pública em `FAMILIA_CERT_SHA256.txt`; alinhamento ZIP de 16 KB e integridade do arquivo confirmados. As cinco bibliotecas arm64 têm segmentos ELF LOAD alinhados a pelo menos `0x4000`. Isso não substitui execução em um aparelho com páginas de 16 KB.
 
-O runner Robolectric inicialmente parou no lock em /home/agent somenteleitura, antes de executar14testes. A JVM de teste passou a usar um diretório próprio sob GRADLE_USER_HOME, mantendo TLS/checksum ativos. Depois, todos49passaram. A captura PixelCopy não é implementada neste runner; a árvore real da Activity foi desenhada diretamente em Bitmap. A revisão dessas imagens identificou sobreposição na câmera, corrigida com dimensões limitadas; o comando final repetiu49testes e gerou as capturas corrigidas.
+O manifesto final informa pacote `com.mundodedescobertas.app.familia`, versão 6 / `0.6.0-familia`, Android mínimo 29 e alvo 35. Permissões: câmera, microfone opcional e a permissão interna AndroidX. Não há internet, localização ou acesso amplo a arquivos. Câmera e microfone foram declarados como hardware opcional.
 
-Relatórios: app/build/reports/tests/testDebugUnitTest/, app/build/reports/lint-results-debug.html e app/build/reports/ui/. O APK é debug para o teste familiar, não uma versão assinada/aprovada para publicação. Os animais/objetos de áudio ainda faltantes e demais limites estão em ESTADO_DO_PROJETO.md.
+## Tentativa de testes em Android real emulado
+
+Foi preparado um emulador API 35 x86_64 com imagem e ferramenta oficiais verificadas, SwiftShader e execução por software sem KVM. O APK debug universal instalou com `Success`. Durante a instalação do APK instrumentado, o Watchdog do Android encerrou o `system_server` do emulador; o serviço PackageManager retornou `Broken pipe`.
+
+**Nenhum teste instrumentado de exportação foi executado.** O problema ocorreu no sistema do emulador, antes de iniciar os testes; não é evidência de uma falha do aplicativo. O emulador foi encerrado. Não foram desativadas verificações, alteradas asserções ou forçadas propriedades de inicialização para produzir um resultado positivo.
+
+Os dois testes de vídeo foram compilados e podem ser executados em Android compatível. Eles verificam composição por pixels, duração da base com reação curta, emojis e som codificados, e mudança real de frequência de 440 Hz para aproximadamente 704 Hz com a voz de neném. As três pequenas amostras de vídeo são originais, geradas para o teste e incluídas somente no APK de instrumentação.
+
+## Validação ainda necessária no Galaxy A57
+
+Não foi conectado um Galaxy A57. Permanecem pendentes: concessão/recusa de câmera e microfone, gravação da reação e sincronização com a base, codecs e HDR, filtros e áudio no MP4 final, gravação na galeria, seletor de documentos, desempenho, temperatura e conforto sensorial. A aparência da câmera e a pronúncia da narração também dependem do aparelho.
+
+O filtro de voz afeta a faixa original inteira e a voz da reação; não há separação automática de fala e música. A prévia da edição mostra cores e emojis com áudio original. Para ouvir a mixagem e os filtros e ver a reação, é preciso renderizar e assistir ao resultado. A edição fica apenas na sessão; o resultado salvo é um novo arquivo e o vídeo original é preservado.
+
+Consulte [CHECKLIST_GALAXY_A57.md](CHECKLIST_GALAXY_A57.md) e [VIDEO_EDITOR.md](VIDEO_EDITOR.md). Os demais recursos e limites do aplicativo estão em [ESTADO_DO_PROJETO.md](ESTADO_DO_PROJETO.md).
+
+Relatórios locais: `app/build/reports/v0.6/`, `app/build/reports/tests/testDebugUnitTest/`, `app/build/reports/lint-results-debug.html` e `app/build/reports/ui/`. A distribuição é uma pré-release familiar assinada para testes, sem publicação na Google Play.

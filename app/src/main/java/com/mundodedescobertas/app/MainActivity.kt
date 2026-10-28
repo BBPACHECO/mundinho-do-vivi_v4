@@ -31,6 +31,7 @@ import com.mundodedescobertas.app.dj.DjScreen
 import com.mundodedescobertas.app.dj.AdultRecordingsScreen
 import com.mundodedescobertas.app.games.GamesScreen
 import com.mundodedescobertas.app.camera.CameraScreen
+import com.mundodedescobertas.app.video.VideoEditorScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -77,7 +78,7 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
     LaunchedEffect(route) { narrator.stop(); if(route !in adultRoutes) adultUnlocked=false }
     val settings = (state as? PreferencesState.Ready)?.value
     LaunchedEffect(settings?.narrationEnabled, settings?.effectiveNarrationVolume) { narrator.stop() }
-    val title = when(route) { "parents" -> "Área dos responsáveis"; "art-library" -> "Desenhos e criações"; "credits" -> "Créditos e privacidade"; "recordings" -> "Músicas salvas"; else -> ActivityArea.entries.firstOrNull{it.route==route}?.title.orEmpty() }
+    val title = when(route) { "parents" -> "Área dos responsáveis"; "art-library" -> "Desenhos e criações"; "credits" -> "Créditos e privacidade"; "recordings" -> "Músicas salvas"; "video-editor" -> "Meu Miniestúdio"; else -> ActivityArea.entries.firstOrNull{it.route==route}?.title.orEmpty() }
     Scaffold(topBar={if(route!="home") TopAppBar(title={Text(title,style=MaterialTheme.typography.titleMedium)},navigationIcon={
         TextButton(onClick={narrator.stop();nav.popBackStack()},modifier=Modifier.heightIn(min=48.dp)) {
             val color=MaterialTheme.colorScheme.primary
@@ -114,7 +115,8 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
                         composable("discover") { DiscoverScreen(p) { narrator.speak(it,p) } }
                         composable("dj") { DjScreen(p) }
                         composable("games") { GamesScreen(settings=p,onSpeak={narrator.speak(it,p)},onStopSpeech=narrator::stop) }
-                        composable("camera") { CameraScreen(p) }
+                        composable("camera") { CameraScreen(p,onOpenEditor={nav.navigate("video-editor"){launchSingleTop=true}}) }
+                        composable("video-editor") { VideoEditorScreen(p) }
                         composable("art-library") { AdultArtLibraryScreen() }
                         composable("credits") { CreditsScreen() }
                         composable("recordings") { AdultRecordingsScreen(p) }

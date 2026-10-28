@@ -1,0 +1,166 @@
+name: Publicar APK Família pré-assinado
+
+on:
+  push:
+    branches: [entregas/0.6-familia]
+
+permissions: {}
+
+concurrency:
+  group: publicar-v0.6.0-familia
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    if: github.repository == 'BBPACHECO/mundinho-do-vivi_v4' && github.event_name == 'push' && github.ref == 'refs/heads/entregas/0.6-familia'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      GH_REPO: BBPACHECO/mundinho-do-vivi_v4
+      TAG: v0.6.0-familia
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Impedir sobrescrita de uma entrega ou tag existente
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          existing=$(gh api --paginate "repos/$GH_REPO/releases?per_page=100" --jq '.[] | select(.tag_name == "v0.6.0-familia") | .id')
+          if [[ -n "$existing" ]]; then
+            echo '::error::Esta versão já tem uma entrega ou rascunho. Inspecione-a antes de continuar; nenhum arquivo será sobrescrito.'
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > "$RUNNER_TEMP/vivi-existing-tag.txt"; then
+            echo '::error::A tag desta versão já existe. Ela não será movida nem reutilizada automaticamente.'
+            exit 1
+          else
+            status=$?
+            test "$status" -eq 2
+          fi
+      - name: Validar origem, hashes e extração
+        id: metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_commit=$(jq -er '.sourceCommit | select(type == "string" and test("^[0-9a-f]{40}$"))' entrega/metadata.json)
+          apk_sha=$(jq -er '.apkSha256 | select(type == "string" and test("^[0-9a-f]{64}$"))' entrega/metadata.json)
+          zip_sha=$(jq -er '.zipSha256 | select(type == "string" and test("^[0-9a-f]{64}$"))' entrega/metadata.json)
+          test "$(git rev-parse HEAD^)" = "$source_commit"
+          test "$(git rev-list --parents -n 1 HEAD | wc -w)" -eq 2
+          git diff --quiet "$source_commit" HEAD -- . ':!entrega'
+          test -f "$ANDROID_HOME/platforms/android-35/android.jar"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/aapt"
+          zip_file=entrega/Mundinho-do-Vivi-0.6-instalar.zip
+          printf '%s  %s\n' "$zip_sha" "$zip_file" | sha256sum -c -
+          python - "$RUNNER_TEMP/vivi-preassinado" <<'PY'
+          import pathlib, stat, sys, zipfile
+
+          output = pathlib.Path(sys.argv[1])
+          output.mkdir()
+          limits = {
+              'Mundinho-do-Vivi-0.6-Galaxy-A57.apk': 160 * 1024 * 1024,
+              'COMO_INSTALAR.txt': 64 * 1024,
+          }
+          with zipfile.ZipFile('entrega/Mundinho-do-Vivi-0.6-instalar.zip') as archive:
+              entries = archive.infolist()
+              assert len(entries) == 2 and {item.filename for item in entries} == set(limits)
+              for item in entries:
+                  assert not item.is_dir() and not stat.S_ISLNK(item.external_attr >> 16)
+                  assert not item.flag_bits & 1
+                  assert 0 < item.file_size <= limits[item.filename]
+                  total = 0
+                  with archive.open(item) as source, (output / item.filename).open('wb') as target:
+                      while chunk := source.read(1024 * 1024):
+                          total += len(chunk)
+                          assert total <= limits[item.filename]
+                          target.write(chunk)
+                  assert total == item.file_size
+          PY
+          printf '%s  %s\n' "$apk_sha" "$RUNNER_TEMP/vivi-preassinado/Mundinho-do-Vivi-0.6-Galaxy-A57.apk" | sha256sum -c -
+          echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
+      - name: Conferir certificado público, pacote e alinhamento
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/vivi-preassinado/Mundinho-do-Vivi-0.6-Galaxy-A57.apk"
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          expected=$(tr -d '[:space:]' < docs/FAMILIA_CERT_SHA256.txt | tr '[:upper:]' '[:lower:]')
+          [[ "$expected" =~ ^[0-9a-f]{64}$ ]]
+          "$tools/apksigner" verify --print-certs "$apk" > "$RUNNER_TEMP/vivi-public-cert.txt"
+          actual=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/vivi-public-cert.txt")
+          test "$actual" = "$expected"
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/vivi-info.txt"
+          grep -F "package: name='com.mundodedescobertas.app.familia' versionCode='6' versionName='0.6.0-familia'" "$RUNNER_TEMP/vivi-info.txt"
+          grep -Fx "native-code: 'arm64-v8a'" "$RUNNER_TEMP/vivi-info.txt"
+      - name: Compilar, testar e analisar a fonte correspondente
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=2
+      - name: Preparar entrega e notas
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp entrega/Mundinho-do-Vivi-0.6-instalar.zip "$RUNNER_TEMP/vivi-preassinado/"
+          cd "$RUNNER_TEMP/vivi-preassinado"
+          sha256sum Mundinho-do-Vivi-0.6-Galaxy-A57.apk Mundinho-do-Vivi-0.6-instalar.zip > SHA256SUMS.txt
+          cat > NOTAS.md <<'NOTAS'
+          Edição **0.6.0-familia** para teste no Galaxy A57 (Android 10+, arm64).
+
+          Baixe **Mundinho-do-Vivi-0.6-Galaxy-A57.apk** abaixo e abra em **Meus Arquivos → Downloads → Instalar**. O download público não exige conta do GitHub; o ZIP `instalar` contém o mesmo APK compactado.
+
+          A edição **Mundinho do Vivi • Família** instala ao lado da versão anterior. As criações antigas permanecem no outro aplicativo; os dados ficam separados, sem migração automática. Não é necessário desinstalar a versão anterior.
+
+          ## Mini editor de vídeo
+
+          Em **Caretas Divertidas → Meu Miniestúdio**, escolha um vídeo local de até 90 segundos e 500 MB, mude as cores, acrescente emojis e sons e grave uma janelinha da câmera enquanto o vídeo passa. Os filtros de voz incluem neném, grave e robô. O filtro altera o áudio original inteiro e a voz da janelinha, incluindo músicas; não isola a fala.
+
+          As alterações são renderizadas em MP4 H264/AAC, com resultado até HD e 30 FPS. Assista ao resultado e escolha salvar na galeria. A edição fica na sessão; o original é preservado. Todo processamento ocorre no aparelho. Câmera e microfone são opcionais; o microfone só é solicitado ao escolher gravar a própria voz.
+
+          ## Assinatura e validação
+
+          Este APK foi assinado localmente com uma chave privada de teste, mantida fora do repositório e dos arquivos de entrega. A assinatura automática no GitHub ainda depende de configurar os secrets apropriados; não se deve gerar outra chave para atualizar uma edição Família já instalada. O CI compara o certificado do APK com a impressão digital pública versionada e valida a fonte correspondente antes de publicar.
+
+          Esta entrega exige compilação, testes automatizados, lint, verificação de assinatura e alinhamento. Os testes Android de dispositivo são compilados; isso não confirma execução em aparelho. Instalação, câmera, microfone, codecs, sincronização e exportação ainda precisam de avaliação em um Galaxy A57 físico.
+
+          Esta é uma pré-release familiar, sem publicação na Google Play. Consulte o README e `docs/ESTADO_DO_PROJETO.md` para os limites conhecidos. `SHA256SUMS.txt` contém os hashes do APK e do ZIP.
+          NOTAS
+      - name: Publicar pré-release sem sobrescrever arquivos existentes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_COMMIT: ${{ steps.metadata.outputs.source_commit }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/vivi-preassinado"
+          gh release create "$TAG" Mundinho-do-Vivi-0.6-Galaxy-A57.apk Mundinho-do-Vivi-0.6-instalar.zip SHA256SUMS.txt --draft --prerelease --target "$SOURCE_COMMIT" --title 'Mundinho do Vivi 0.6 — editor de vídeo' --notes-file NOTAS.md
+          test "$(gh release view "$TAG" --json isDraft,isPrerelease,assets --jq '.isDraft and .isPrerelease and (.assets | length) == 3 and all(.assets[]; .state == "uploaded" and .size > 0)')" = true
+          gh release edit "$TAG" --draft=false --prerelease --latest=false
+      - name: Conferir download público sem login
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/$GH_REPO/releases/download/$TAG/Mundinho-do-Vivi-0.6-Galaxy-A57.apk"
+          curl --fail --location --silent --show-error --retry 3 --max-time 180 "$url" --output "$RUNNER_TEMP/vivi-public.apk"
+          cmp "$RUNNER_TEMP/vivi-preassinado/Mundinho-do-Vivi-0.6-Galaxy-A57.apk" "$RUNNER_TEMP/vivi-public.apk"
+          printf 'Download público conferido; o APK é idêntico ao arquivo validado.\n\n[Baixar APK](%s)\n' "$url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Guardar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-preassinado-0.6
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-debug.*
+            app/build/reports/ui/
+          if-no-files-found: warn
+          retention-days: 14

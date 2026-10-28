@@ -41,7 +41,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun CameraScreen(settings:ChildPreferences) {
+fun CameraScreen(settings:ChildPreferences,onOpenEditor:(()->Unit)?=null) {
     val context=LocalContext.current
     val owner=LocalLifecycleOwner.current
     val scope=rememberCoroutineScope()
@@ -87,6 +87,12 @@ fun CameraScreen(settings:ChildPreferences) {
     LaunchedEffect(selected){controller?.filter=FaceFilter.entries[selected]}
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=16.dp,vertical=12.dp),
         verticalArrangement=Arrangement.spacedBy(12.dp)) {
+        if(onOpenEditor!=null) ElevatedCard(onClick=onOpenEditor,modifier=Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
+                Text("Meu Miniestúdio",style=MaterialTheme.typography.titleLarge)
+                Text("Edite vídeos com cores, emojis, sons e sua janelinha da câmera.",style=MaterialTheme.typography.bodyMedium)
+            }
+        }
         Text("Vamos fazer uma careta?",style=MaterialTheme.typography.headlineMedium)
         Text("Tudo acontece neste aparelho. Nenhuma imagem é enviada. Deslize para trocar o filtro.",style=MaterialTheme.typography.bodyMedium)
         BoxWithConstraints(Modifier.fillMaxWidth()) {
