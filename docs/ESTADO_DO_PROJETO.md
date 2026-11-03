@@ -1,6 +1,6 @@
 # Estado — versão 0.6.1 para teste familiar
 
-As cinco áreas abrem atividades Android nativas. O novo **Meu Miniestúdio** fica dentro de **Caretas Divertidas**, mantendo os cinco acessos da tela inicial. O código da versão 0.6 inclui o editor; a publicação de um APK assinado e os resultados finais devem ser conferidos nas notas da entrega e em [VALIDACAO](VALIDACAO.md).
+A tela inicial atual possui seis acessos: cinco áreas locais e **Meus Vídeos**, uma seção opcional online do YouTube. **Meu Miniestúdio** continua dentro de **Caretas Divertidas**. O código da versão 0.6 inclui o editor; a publicação de um APK assinado e os resultados finais devem ser conferidos nas notas da entrega e em [VALIDACAO](VALIDACAO.md). Alterações locais não comprovam publicação em uma release.
 
 ## Implementado
 
@@ -10,6 +10,14 @@ As cinco áreas abrem atividades Android nativas. O novo **Meu Miniestúdio** fi
 - **Jogos:** oito minijogos com interação, pausa, ajustes e construção em grade com salvamento.
 - **Câmera:** sete acessórios ou máscaras rastreados em 2D e cinco deformações reais de imagem, modelo incluído, permissão explícita e foto salva após confirmação.
 - **Vídeo:** importação de vídeo local de até 90 segundos e 500 MiB, cinco opções de cor, seis tipos de emoji com até oito inserções, seis sons locais com até 12 inserções, posição e intervalo dos emojis, gravação de câmera enquanto o vídeo passa e voz opcional. Filtros de voz original, neném, grave e robô. Renderização MP4 H264/AAC até HD e 30 FPS, reprodução do resultado, cancelamento e confirmação de salvamento na galeria. A edição vale para a sessão; o original é preservado. Veja [VIDEO_EDITOR](VIDEO_EDITOR.md).
+- **Meus Vídeos:** biblioteca local de vídeos do YouTube aprovados pelos responsáveis, filtro por título e player oficial incorporado. A gestão adulta pesquisa no site do YouTube dentro do app ou cadastra um link e título. Não requer backend ou chave de API. A pesquisa online e a reprodução precisam de internet e de um WebView funcional. Veja [VIDEOS_YOUTUBE](VIDEOS_YOUTUBE.md).
+
+## Limites dos vídeos online
+
+- A integração usa o YouTube comum; não incorpora o aplicativo YouTube Kids nem seus filtros.
+- O YouTube recebe as pesquisas e dados de reprodução e pode apresentar anúncios, recomendações e links. A lista aprovada não garante que toda a experiência do serviço fique restrita a ela.
+- Vídeos privados, removidos, bloqueados por região/idade ou sem permissão para incorporação podem não tocar. Não há download ou reprodução offline dos vídeos do YouTube.
+- Os testes locais da biblioteca e interface não comprovam a pesquisa e reprodução online no aparelho. Esses fluxos ainda precisam de validação em Android com internet e WebView atualizado.
 
 ## Instalação da edição Família
 

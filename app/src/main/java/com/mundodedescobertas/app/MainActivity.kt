@@ -32,6 +32,8 @@ import com.mundodedescobertas.app.dj.AdultRecordingsScreen
 import com.mundodedescobertas.app.games.GamesScreen
 import com.mundodedescobertas.app.camera.CameraScreen
 import com.mundodedescobertas.app.video.VideoEditorScreen
+import com.mundodedescobertas.app.videos.VideosScreen
+import com.mundodedescobertas.app.videos.ManageVideosScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -68,7 +70,7 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
     val route = entry?.destination?.route ?: "home"
     // Non-saveable: rotation/recreation and backgrounding re-lock the adult area.
     var adultUnlocked by remember { mutableStateOf(false) }
-    val adultRoutes = setOf("parents", "art-library", "credits", "recordings")
+    val adultRoutes = setOf("parents", "art-library", "credits", "recordings", "manage-videos")
     val owner = LocalLifecycleOwner.current
     DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _,event -> if(event==Lifecycle.Event.ON_STOP) adultUnlocked=false }
@@ -78,7 +80,7 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
     LaunchedEffect(route) { narrator.stop(); if(route !in adultRoutes) adultUnlocked=false }
     val settings = (state as? PreferencesState.Ready)?.value
     LaunchedEffect(settings?.narrationEnabled, settings?.effectiveNarrationVolume) { narrator.stop() }
-    val title = when(route) { "parents" -> "Área dos responsáveis"; "art-library" -> "Desenhos e criações"; "credits" -> "Créditos e privacidade"; "recordings" -> "Músicas salvas"; "video-editor" -> "Meu Miniestúdio"; else -> ActivityArea.entries.firstOrNull{it.route==route}?.title.orEmpty() }
+    val title = when(route) { "parents" -> "Área dos responsáveis"; "art-library" -> "Desenhos e criações"; "credits" -> "Créditos e privacidade"; "recordings" -> "Músicas salvas"; "video-editor" -> "Meu Miniestúdio"; "manage-videos" -> "Vídeos dos responsáveis"; else -> ActivityArea.entries.firstOrNull{it.route==route}?.title.orEmpty() }
     Scaffold(topBar={if(route!="home") TopAppBar(title={Text(title,style=MaterialTheme.typography.titleMedium)},navigationIcon={
         TextButton(onClick={narrator.stop();nav.popBackStack()},modifier=Modifier.heightIn(min=48.dp)) {
             val color=MaterialTheme.colorScheme.primary
@@ -108,7 +110,7 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
                             HomeScreen(p,onOpen={nav.navigate(it.route){launchSingleTop=true}},onParents={nav.navigate("parents"){launchSingleTop=true}},onMascot={
                                 if(p.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 val now=android.os.SystemClock.elapsedRealtime()
-                                if(now-lastGreeting>4000) {narrator.speak("Oi, ${p.childName}! Vamos brincar?",p);lastGreeting=now}
+                                if(now-lastGreeting>4000) {narrator.speak("Oi! Vamos brincar?",p);lastGreeting=now}
                             })
                         }
                         composable("atelier") { PaintingScreen(p) }
@@ -117,13 +119,16 @@ private fun ViviApp(model: ViviViewModel, narrator: LocalNarrator) {
                         composable("games") { GamesScreen(settings=p,onSpeak={narrator.speak(it,p)},onStopSpeech=narrator::stop) }
                         composable("camera") { CameraScreen(p,onOpenEditor={nav.navigate("video-editor"){launchSingleTop=true}}) }
                         composable("video-editor") { VideoEditorScreen(p) }
+                        composable("videos") { VideosScreen(p, onManageVideos={nav.navigate("manage-videos"){launchSingleTop=true}}) }
+                        composable("manage-videos") { if(adultUnlocked) ManageVideosScreen() }
                         composable("art-library") { AdultArtLibraryScreen() }
                         composable("credits") { CreditsScreen() }
                         composable("recordings") { AdultRecordingsScreen(p) }
                         composable("parents") {
                             ParentsScreen(settings=p, voiceAvailable=voiceAvailable, update=model::update,
                                 onOpenArtLibrary={nav.navigate("art-library")}, onOpenCredits={nav.navigate("credits")}, onOpenRecordings={nav.navigate("recordings")},
-                                onTestVoice={narrator.speak("Oi, ${p.childName}! Vamos descobrir coisas novas, no seu ritmo.",p)})
+                                onTestVoice={narrator.speak("Oi, ${p.childName}! Vamos descobrir coisas novas, no seu ritmo.",p)},
+                                onOpenVideos={nav.navigate("manage-videos"){launchSingleTop=true}})
                         }
                     }
                 }

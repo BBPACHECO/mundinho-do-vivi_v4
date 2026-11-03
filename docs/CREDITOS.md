@@ -1,5 +1,7 @@
 # Créditos e licenças — 0.5.0
 
+Simba, o mascote Shih-tzu da tela inicial: ilustração digital gerada com IA a partir da descrição do proprietário do projeto, incluída localmente com fundo transparente.
+
 Arte de Nuvino, ícone, desenhos para colorir, ilustrações educativas e gráficos dos jogos: vetores originais criados para este projeto. As famílias procedurais de ilustração e suas limitações estão descritas em DESCOBRIR.md.
 
 Os 32 arquivos de som vêm da biblioteca Sonic Pi sob CC0. Os autores/fontes individuais e as transformações de formato/recorte estão em CREDITOS_AUDIO.md e no arquivo empacotado assets/dj/credits.json. O README da fonte foi preservado e o download fixado a um commit. A biblioteca atual não contém todos os animais/objetos solicitados.

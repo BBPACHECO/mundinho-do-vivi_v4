@@ -1,5 +1,11 @@
 MUNDINHO DO VIVI — 0.6.1 · TESTE EM FAMÍLIA
 
+Simba, o mascote Shih-tzu da tela inicial: ilustração digital gerada com IA a partir da descrição do proprietário do projeto, incluída localmente com fundo transparente.
+
+Meus Vídeos usa o player e a pesquisa oficiais do YouTube pela internet. YouTube é um serviço do Google, separado do Mundinho do Vivi e do YouTube Kids. Vídeos, anúncios, recomendações e coleta de dados do serviço seguem seus próprios termos e política de privacidade. Os responsáveis escolhem os títulos da lista local; o aplicativo não baixa nem redistribui os vídeos do YouTube.
+https://www.youtube.com/t/terms
+https://policies.google.com/privacy
+
 Nuvino, ilustrações, desenhos para colorir e gráficos de jogos: recursos vetoriais originais criados para este projeto.
 
 Kotlin, Kotlin Coroutines, Jetpack Compose, Activity, Lifecycle, Navigation, DataStore, Core e CameraX: Google, JetBrains e contribuidores; Apache License 2.0.

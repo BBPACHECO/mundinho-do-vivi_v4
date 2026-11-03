@@ -3,6 +3,7 @@ package com.mundodedescobertas.app.integration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.compose.ui.test.*
+import androidx.compose.ui.semantics.SemanticsProperties
 import java.io.File
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.mundodedescobertas.app.MainActivity
@@ -21,14 +22,38 @@ import org.robolectric.annotation.GraphicsMode
 class ActivityNavigationRuntimeTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test fun fiveNativeRoutesOpenAndTopLeftBackReturnsHome() {
+    @Test fun videoManagementRequiresTheAdultChallengeBeforeOnlineSearch() {
+        compose.waitUntil(30_000) {
+            compose.onAllNodesWithTag("home_areas").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("home_areas").performScrollToNode(hasText("Meus Vídeos"))
+        compose.onNodeWithText("Meus Vídeos").performClick()
+        compose.onNodeWithTag("approved_videos_list").performScrollToNode(hasText("Pedir ajuda aos responsáveis"))
+        compose.onNodeWithText("Pedir ajuda aos responsáveis").performClick()
+        compose.onNodeWithText("Um momento com o responsável").assertExists()
+        compose.onNodeWithText("Entrar nas configurações").assertIsNotEnabled()
+        val challenge = compose.onNodeWithTag("adult_challenge").fetchSemanticsNode()
+            .config[SemanticsProperties.Text].joinToString(" ") { it.text }
+        val operands = Regex("[0-9]+").findAll(challenge).map { it.value.toInt() }.toList()
+        check(operands.size == 2)
+        compose.onNodeWithTag("adult_answer").performTextInput((operands[0] * operands[1]).toString())
+        compose.onNodeWithText("Entrar nas configurações").performClick()
+        compose.onNodeWithTag("manage_videos_list").performScrollToNode(hasText("Pesquisar vídeos no YouTube"))
+        compose.onNodeWithText("Pesquisar vídeos no YouTube").assertExists()
+        compose.onNodeWithTag("manage_videos_list").performScrollToNode(hasText("Buscar no YouTube"))
+        compose.onNodeWithText("Buscar no YouTube").assertIsNotEnabled()
+        compose.onNodeWithTag("manage_videos_list").performScrollToIndex(0)
+        capture("manage-videos")
+    }
+
+    @Test fun sixNativeRoutesOpenAndTopLeftBackReturnsHome() {
         compose.waitUntil(30_000) {
             compose.onAllNodesWithTag("home_areas").fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("home_areas").performScrollToIndex(0)
         capture("home")
-        val names = mapOf("Meu Ateliê" to "atelier", "Meu DJ" to "dj", "Descobrir" to "discover", "Meus Joguinhos" to "games", "Caretas Divertidas" to "camera")
-        listOf("Meu Ateliê", "Meu DJ", "Descobrir", "Meus Joguinhos", "Caretas Divertidas").forEach { title ->
+        val names = mapOf("Meu Ateliê" to "atelier", "Meu DJ" to "dj", "Descobrir" to "discover", "Meus Joguinhos" to "games", "Caretas Divertidas" to "camera", "Meus Vídeos" to "videos")
+        listOf("Meu Ateliê", "Meu DJ", "Descobrir", "Meus Joguinhos", "Caretas Divertidas", "Meus Vídeos").forEach { title ->
             compose.onNodeWithTag("home_areas").performScrollToNode(hasText(title))
             compose.onNodeWithText(title).performClick()
             compose.onNodeWithTag("home_areas").assertDoesNotExist()
@@ -41,6 +66,10 @@ class ActivityNavigationRuntimeTest {
             capture(names.getValue(title))
             if (title == "Caretas Divertidas") {
                 compose.onNodeWithText("Meu Miniestúdio").performClick()
+                // A limpeza inicial roda em IO, fora da sincronização automática do Compose.
+                compose.waitUntil(30_000) {
+                    compose.onAllNodes(hasText("Escolher um vídeo") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+                }
                 compose.onNodeWithText("Escolher um vídeo").assertIsEnabled()
                 compose.onNodeWithText("Cores, emojis e brincadeiras").assertExists()
                 capture("video-editor")

@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.drawscope.*
 import com.mundodedescobertas.app.ui.theme.Ink
 import kotlin.math.*
 
-enum class Scene { ATELIER, DJ, DISCOVER, GAMES, CAMERA, MASCOT }
+enum class Scene { ATELIER, DJ, DISCOVER, GAMES, CAMERA, VIDEOS, MASCOT }
 
 /** Ilustrações vetoriais originais. Sem bitmaps externos, emojis ou dependências de rede. */
 @Composable
@@ -29,6 +29,7 @@ fun Illustration(scene: Scene, modifier: Modifier = Modifier, happy: Boolean = f
                     Scene.DISCOVER -> discover()
                     Scene.GAMES -> games()
                     Scene.CAMERA -> camera()
+                    Scene.VIDEOS -> videos()
                 }
             }
         }
@@ -39,6 +40,14 @@ private val Peach = Color(0xFFFFAD94)
 private val Mint = Color(0xFF8FCDB2)
 private val Yellow = Color(0xFFFFD880)
 private val Blue = Color(0xFF8EBDE3)
+private fun DrawScope.videos() {
+    drawRoundRect(Purple, Offset(8f,28f), Size(104f,70f), CornerRadius(18f))
+    drawRoundRect(Color(0xFFF9DAE6), Offset(15f,35f), Size(90f,56f), CornerRadius(12f))
+    val play = Path().apply { moveTo(51f,46f); lineTo(51f,80f); lineTo(78f,63f); close() }
+    drawPath(play, Purple)
+    star(24f,17f,8f,Yellow)
+    star(100f,14f,6f,Peach)
+}
 private fun DrawScope.line(a: Offset, b: Offset, color: Color = Ink, width: Float = 3f) = drawLine(color, a, b, width, StrokeCap.Round)
 private fun DrawScope.face(x: Float, y: Float, gap: Float = 11f, happy: Boolean = false) {
     if (happy) {

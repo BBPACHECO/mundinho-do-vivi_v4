@@ -1,8 +1,8 @@
 # Mundinho do Vivi — 0.6.1 · teste em família
 
-Aplicativo Android **nativo em Kotlin e Jetpack Compose**, com cinco ambientes locais. Requer Android 10 ou superior (API 29); compilação e target SDK 35. Não usa HTML ou WebView.
+Aplicativo Android **nativo em Kotlin e Jetpack Compose**, com seis acessos na tela inicial. As atividades de criação e aprendizagem são locais; **Meus Vídeos** é uma seção opcional online do YouTube. Requer Android 10 ou superior (API 29); compilação e target SDK 35. A seção do YouTube usa WebView para a pesquisa dos responsáveis e o player oficial incorporado.
 
-A versão 0.6 acrescenta o **Meu Miniestúdio**, dentro de **Caretas Divertidas**, mantendo os cinco acessos da tela inicial. É uma edição de teste familiar; ainda há requisitos do projeto original e testes físicos pendentes. Consulte o [estado e as limitações](docs/ESTADO_DO_PROJETO.md) e os [resultados de validação](docs/VALIDACAO.md).
+A versão 0.6 acrescenta o **Meu Miniestúdio**, dentro de **Caretas Divertidas**. O código atual também inclui **Meus Vídeos**, com uma lista escolhida pelos responsáveis. É uma edição de teste familiar; ainda há requisitos do projeto original e testes físicos pendentes. Consulte o [estado e as limitações](docs/ESTADO_DO_PROJETO.md) e os [resultados de validação](docs/VALIDACAO.md). Os links de releases abaixo correspondem às entregas publicadas e não comprovam que alterações locais já foram distribuídas.
 
 ## Atividades implementadas
 
@@ -12,6 +12,7 @@ A versão 0.6 acrescenta o **Meu Miniestúdio**, dentro de **Caretas Divertidas*
 - **Meus Joguinhos:** voo por obstáculos, corrida de três pistas, construção em grade com salvamento, bolhas, memória, quebra-cabeça retangular, formas e contagem. Controles de toque, pausa, reinício e ajustes sensoriais.
 - **Caretas Divertidas:** CameraX e ML Kit com modelo incluído, sete acessórios ou máscaras rastreados em 2D e cinco deformações reais de pixels. Troca de câmera, gesto para mudar filtro e fotografia filtrada salva somente após confirmação. O rastreamento não representa reconstrução 3D.
 - **Meu Miniestúdio:** escolha de vídeo local, cinco opções de cor, seis emojis com posição, tamanho e intervalo, sons engraçados na linha do tempo e filtros de voz original, neném, grave e robô. Grava uma janelinha da câmera enquanto o vídeo passa, com voz opcional. Renderiza um novo MP4 antes de salvar. Veja [como usar e os limites](docs/VIDEO_EDITOR.md).
+- **Meus Vídeos:** lista local de vídeos do YouTube aprovados pelos responsáveis, pesquisa por título nessa lista e reprodução pelo player oficial dentro do app. A área adulta permite pesquisar no site do YouTube e aprovar um vídeo, ou cadastrar seu link e título. Exige internet para pesquisa online e reprodução; não incorpora o YouTube Kids nem seus filtros. Veja [como configurar e os limites](docs/VIDEOS_YOUTUBE.md).
 - **Responsáveis:** verificação adulta, nome, volumes, narração, animação, velocidade, dificuldade, redução de estímulos, vibração, limite de elementos, Modo Calminho, lembrete de pausa, bibliotecas e créditos. O acesso adulto é bloqueado novamente em segundo plano.
 
 ## Instalação e preservação das criações
@@ -26,9 +27,11 @@ O [APK histórico 0.5](https://github.com/BBPACHECO/mundinho-do-vivi_v4/releases
 
 ## Privacidade e permissões
 
-O processamento das atividades, fotos, vídeos e voz ocorre no aparelho. O app não pede internet, localização ou acesso amplo a arquivos. A câmera só é solicitada por ação explícita. O microfone é opcional e solicitado somente ao iniciar a gravação da janelinha com **Gravar minha voz** ativado; o DJ continua gravando a mistura digital sem microfone. A recusa do microfone permite gravar uma janelinha silenciosa.
+O processamento das atividades, fotos, vídeos locais e voz ocorre no aparelho. O app inclui a permissão de internet para **Meus Vídeos**; não pede localização ou acesso amplo a arquivos. A câmera só é solicitada por ação explícita. O microfone é opcional e solicitado somente ao iniciar a gravação da janelinha com **Gravar minha voz** ativado; o DJ continua gravando a mistura digital sem microfone. A recusa do microfone permite gravar uma janelinha silenciosa.
 
-O seletor do Android abre somente o arquivo escolhido. O original do vídeo é preservado; a edição usa cópias privadas temporárias. O vídeo final só vai à galeria após uma ação de salvar. A edição não possui rascunho persistente: salve o resultado antes de sair. Não há anúncios, cadastro ou envio de conteúdo.
+O seletor do Android abre somente o arquivo escolhido. O original do vídeo é preservado; a edição usa cópias privadas temporárias. O vídeo final só vai à galeria após uma ação de salvar. A edição não possui rascunho persistente: salve o resultado antes de sair. O app não envia as fotos, pinturas, gravações ou vídeos locais ao YouTube.
+
+Ao abrir a pesquisa online ou o player, o YouTube recebe as pesquisas e os dados necessários ao serviço e aplica suas próprias políticas. Pode haver anúncios, recomendações, links, cookies e restrições de reprodução. A aprovação de um vídeo organiza a lista inicial; não transforma o serviço em YouTube Kids nem garante uma experiência fechada. Não há download ou extração dos arquivos do YouTube pelo aplicativo.
 
 Uma voz pt-BR local precisa estar instalada nas configurações de texto para voz do Android para haver narração em modo avião. Sem ela, o app funciona visualmente sem fala. A naturalidade depende do pacote instalado. Os filtros de voz do editor alteram o áudio original inteiro, incluindo música; não isolam fala automaticamente.
 
@@ -60,7 +63,7 @@ O workflow `gerar-apk.yml` compila e valida debug. Seu job de assinatura Famíli
 
 Para esta entrega, `publicar-apk-preassinado.yml` recebe o instalador já assinado em uma branch separada de distribuição. Confere que o código coincide com o commit de origem, valida hashes, certificado e alinhamento, executa as verificações e publica o download. A chave privada permanece fora do Git e do instalador; nenhum binário de distribuição é adicionado à `main`.
 
-A primeira compilação requer rede para ferramentas e bibliotecas. Áudios e modelo facial acompanham o app. Os testes Robolectric obtêm o Android instrumentado do Maven Central; após preencher os caches, o build pode usar `--offline`. O app instalado funciona offline.
+A primeira compilação requer rede para ferramentas e bibliotecas. Áudios e modelo facial acompanham o app. Os testes Robolectric obtêm o Android instrumentado do Maven Central; após preencher os caches, o build pode usar `--offline`. As atividades locais funcionam offline; a pesquisa no YouTube e sua reprodução precisam de internet.
 
 ## Testes e limites da evidência
 
@@ -72,11 +75,11 @@ A primeira compilação requer rede para ferramentas e bibliotecas. Áudios e mo
 
 Os testes de vídeo em dispositivo incluem composição de pixels, duração, áudio e mudança real de frequência. Sua existência ou compilação não comprova que foram executados. O resultado efetivamente obtido fica em [VALIDACAO](docs/VALIDACAO.md).
 
-Robolectric não comprova codecs, sincronização da câmera com o vídeo, qualidade final dos filtros, microfone, latência, zoom, FPS ou temperatura no Galaxy. Execute o [checklist do Galaxy A57](docs/CHECKLIST_GALAXY_A57.md) e registre versão Android/One UI, versão do app e passos de qualquer falha.
+Robolectric não comprova codecs, sincronização da câmera com o vídeo, qualidade final dos filtros, microfone, latência, zoom, FPS ou temperatura no Galaxy. Os testes locais da seção YouTube verificam links, biblioteca e interface local; não comprovam a pesquisa ou a reprodução online no WebView de um aparelho. Execute o [checklist do Galaxy A57](docs/CHECKLIST_GALAXY_A57.md) e as [verificações do YouTube](docs/VIDEOS_YOUTUBE.md), registrando versão Android/One UI, versão do app e passos de qualquer falha.
 
 ## Organização e ambiente cloud
 
-`data/` guarda preferências; `painting/`, pintura e rascunhos; `learning/`, catálogo e contagem; `dj/`, mixer e WAV; `games/`, física e apresentação; `camera/`, detecção e deformações; `video/`, importação, captura, efeitos e exportação; `audio/`, narração; `ui/`, tema, início e responsáveis. ViewModel, StateFlow e coroutines separam estado e operações de entrada e saída.
+`data/` guarda preferências; `painting/`, pintura e rascunhos; `learning/`, catálogo e contagem; `dj/`, mixer e WAV; `games/`, física e apresentação; `camera/`, detecção e deformações; `video/`, importação, captura, efeitos e exportação; `videos/`, biblioteca aprovada e integração online com o YouTube; `audio/`, narração; `ui/`, tema, início e responsáveis. ViewModel, StateFlow e coroutines separam estado e operações de entrada e saída.
 
 Consulte também [Ateliê](docs/ATELIE.md), [Descobrir](docs/DESCOBRIR.md), [DJ](docs/DJ.md), [Jogos](docs/JOGOS.md), [Câmera](docs/CAMERA.md) e [créditos dos sons](docs/CREDITOS_AUDIO.md).
 

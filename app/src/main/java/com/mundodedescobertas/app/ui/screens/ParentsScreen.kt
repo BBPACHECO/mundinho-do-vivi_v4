@@ -21,7 +21,7 @@ import com.mundodedescobertas.app.data.*
 import kotlin.math.roundToInt
 
 @Composable
-fun ParentsScreen(settings: ChildPreferences, voiceAvailable: Boolean, update: ((ChildPreferences) -> ChildPreferences) -> Unit, onOpenArtLibrary: () -> Unit, onOpenCredits: () -> Unit, onOpenRecordings: () -> Unit, onTestVoice: () -> Unit) {
+fun ParentsScreen(settings: ChildPreferences, voiceAvailable: Boolean, update: ((ChildPreferences) -> ChildPreferences) -> Unit, onOpenArtLibrary: () -> Unit, onOpenCredits: () -> Unit, onOpenRecordings: () -> Unit, onTestVoice: () -> Unit, onOpenVideos: () -> Unit) {
     var name by rememberSaveable(settings.childName) { mutableStateOf(settings.childName) }
     var externalConfirm by remember { mutableStateOf(false) }
     var browserError by remember { mutableStateOf(false) }
@@ -72,6 +72,10 @@ fun ParentsScreen(settings: ChildPreferences, voiceAvailable: Boolean, update: (
                 }
             }
         }
+        SettingsGroup("Vídeos escolhidos pelos responsáveis") {
+            Text("Pesquise no YouTube e aprove os vídeos que aparecem em Meus Vídeos. A reprodução exige internet e pode mostrar anúncios, recomendações e links do YouTube; não usa os filtros do YouTube Kids.", style=MaterialTheme.typography.bodyLarge)
+            Button(onClick=onOpenVideos, modifier=Modifier.heightIn(min=48.dp)) { Text("Escolher e gerenciar vídeos") }
+        }
         SettingsGroup("Biblioteca e arquivos") {
             Text("Importe desenhos PNG, JPG ou a primeira página de um PDF. As pinturas ficam no aparelho; salvar na galeria é sempre uma ação explícita.",style=MaterialTheme.typography.bodyLarge)
             Button(onClick=onOpenArtLibrary,modifier=Modifier.heightIn(min=48.dp)) { Text("Desenhos e pinturas salvas") }
@@ -80,7 +84,7 @@ fun ParentsScreen(settings: ChildPreferences, voiceAvailable: Boolean, update: (
             Text("Os desenhos desse site têm licenças próprias. Confira os direitos antes de distribuir arquivos.",style=MaterialTheme.typography.bodyMedium)
         }
         SettingsGroup("Privacidade") {
-            Text("Sem anúncios, compras, login ou rastreadores. A câmera é opcional e só é ligada em Caretas, depois da sua autorização. Não pedimos microfone, localização, internet ou acesso amplo ao armazenamento. Fotos e rostos são processados no aparelho. As preferências são locais e o backup automático está desativado. O link externo abre outro aplicativo e segue a política do site. Nenhum conteúdo é enviado pelo Mundinho do Vivi.",style=MaterialTheme.typography.bodyLarge)
+            Text("As atividades de pintura, música, aprendizagem, jogos, câmera e edição de vídeo continuam locais. A câmera é opcional; o microfone só é solicitado para gravar a voz na janelinha do Miniestúdio. Não pedimos localização ou acesso amplo ao armazenamento. Preferências e criações ficam no aparelho, com backup automático desativado. Meus Vídeos usa internet e o serviço do YouTube, que recebe as pesquisas e dados de reprodução e pode exibir anúncios e recomendações conforme suas políticas. As fotos, gravações e vídeos locais não são enviados ao YouTube pelo aplicativo.",style=MaterialTheme.typography.bodyLarge)
         }
         SettingsGroup("Créditos e versão") {
             Text("Mundinho do Vivi · 0.5.0 · Teste em família\nArte vetorial original, atividades locais e detector facial com modelo incluído no aplicativo.\n\nA voz usa o pacote pt-BR offline do Android. A disponibilidade e a naturalidade dependem do aparelho.",style=MaterialTheme.typography.bodyMedium)

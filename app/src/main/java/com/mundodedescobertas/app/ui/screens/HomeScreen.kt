@@ -2,6 +2,7 @@ package com.mundodedescobertas.app.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,11 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mundodedescobertas.app.R
 import com.mundodedescobertas.app.data.ChildPreferences
 import com.mundodedescobertas.app.ui.components.*
 import com.mundodedescobertas.app.ui.theme.*
@@ -25,13 +29,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 
-/** Cinco destinos infantis estáveis, compartilhados pela navegação e pelos testes. */
+/** Destinos infantis compartilhados pela navegação e pelos testes. */
 enum class ActivityArea(val route: String, val title: String, val subtitle: String, val color: Color, val scene: Scene) {
     ATELIER("atelier", "Meu Ateliê", "Um cantinho para criar", Color(0xFFFFE6D7), Scene.ATELIER),
     DJ("dj", "Meu DJ", "Sons para inventar", Color(0xFFEAE1FA), Scene.DJ),
     DISCOVER("discover", "Descobrir", "Letras, números e histórias", Color(0xFFFFEFC4), Scene.DISCOVER),
     GAMES("games", "Meus Joguinhos", "Pequenas grandes aventuras", Color(0xFFDFF0E5), Scene.GAMES),
     CAMERA("camera", "Caretas Divertidas", "Um mundo de caras engraçadas", Color(0xFFDDEDF9), Scene.CAMERA),
+    VIDEOS("videos", "Meus Vídeos", "Escolhidos com carinho", Color(0xFFF9DAE6), Scene.VIDEOS),
 }
 
 @Composable
@@ -46,16 +51,23 @@ fun HomeScreen(settings: ChildPreferences, onOpen: (ActivityArea) -> Unit, onPar
         }
     }
     LaunchedEffect(happy) { if (happy) { delay(1600); happy = false } }
-    val angle by animateFloatAsState(if (tilt) 4f * settings.effectiveAnimation else -4f * settings.effectiveAnimation, tween(1400), label="Nuvino balança suavemente")
+    val angle by animateFloatAsState(if (tilt) 4f * settings.effectiveAnimation else -4f * settings.effectiveAnimation, tween(1400), label="Simba balança suavemente")
     LazyVerticalGrid(
         columns = GridCells.Adaptive(300.dp),
         contentPadding = PaddingValues(start=20.dp,end=20.dp,bottom=24.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxSize().testTag("home_areas"),
+        modifier = Modifier.fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color(0xFFE0CCF7), Color(0xFFFFE0BB), Color(0xFFAFE0D6))))
+            .testTag("home_areas"),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.End) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.SpaceBetween, verticalAlignment=Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(R.drawable.autism_infinity),
+                    contentDescription = "Símbolo do autismo e da neurodiversidade: infinito colorido.",
+                    modifier = Modifier.size(width=48.dp, height=32.dp),
+                )
                 TextButton(onClick=onParents, modifier=Modifier.heightIn(min=48.dp)) { Text("Responsáveis", style=MaterialTheme.typography.bodyMedium) }
             }
         }
@@ -63,10 +75,14 @@ fun HomeScreen(settings: ChildPreferences, onOpen: (ActivityArea) -> Unit, onPar
             Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally) {
                 Text("Mundinho do Vivi", style=MaterialTheme.typography.headlineLarge, modifier=Modifier.semantics { heading() })
                 Spacer(Modifier.height(4.dp))
-                Text("Oi, ${settings.childName}! Vamos brincar?", style=MaterialTheme.typography.bodyLarge)
-                Illustration(Scene.MASCOT,Modifier.padding(top=8.dp).size(100.dp).rotate(angle)
-                    .semantics { contentDescription="Nuvino, nosso mascote. Toque para dizer oi."; role=Role.Button }
-                    .clickable { happy=true; onMascot() },happy)
+                Text("OI VAMOS BRINCAR.", style=MaterialTheme.typography.bodyLarge)
+                Image(
+                    painter = painterResource(R.drawable.mascot_simba),
+                    contentDescription = "Simba, nosso mascote Shih-tzu. Toque para dizer oi.",
+                    modifier = Modifier.padding(top=8.dp).size(100.dp).rotate(angle)
+                        .semantics { role=Role.Button }
+                        .clickable { happy=true; onMascot() },
+                )
                 Text(if(happy) "Que bom ter você aqui!" else "Um mundo de descobertas, no seu ritmo.",style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(12.dp))
             }

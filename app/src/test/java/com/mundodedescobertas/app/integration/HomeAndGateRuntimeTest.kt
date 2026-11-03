@@ -25,7 +25,7 @@ import org.robolectric.annotation.GraphicsMode
 class HomeAndGateRuntimeTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun allFiveIllustratedAreasRespondToTouchWithCorrectDestination() {
+    @Test fun allSixIllustratedAreasRespondToTouchWithCorrectDestination() {
         val opened = mutableListOf<ActivityArea>()
         compose.setContent {
             ViviTheme { Surface {
@@ -33,20 +33,22 @@ class HomeAndGateRuntimeTest {
                     onOpen = { opened.add(it) }, onParents = {}, onMascot = {})
             } }
         }
-        compose.onNodeWithText("Oi, Bia! Vamos brincar?").assertExists()
+        compose.onNodeWithText("OI VAMOS BRINCAR.").assertExists()
+        compose.onNodeWithContentDescription("Símbolo do autismo e da neurodiversidade: infinito colorido.").assertExists()
         val requested = listOf(
             "Meu Ateliê" to ActivityArea.ATELIER,
             "Meu DJ" to ActivityArea.DJ,
             "Descobrir" to ActivityArea.DISCOVER,
             "Meus Joguinhos" to ActivityArea.GAMES,
             "Caretas Divertidas" to ActivityArea.CAMERA,
+            "Meus Vídeos" to ActivityArea.VIDEOS,
         )
         requested.forEach { (title, destination) ->
             compose.onNodeWithTag("home_areas").performScrollToNode(hasText(title))
             compose.onNodeWithText(title).performClick()
             compose.runOnIdle { assertEquals(destination, opened.last()) }
         }
-        compose.runOnIdle { assertEquals(5, opened.distinct().size) }
+        compose.runOnIdle { assertEquals(6, opened.distinct().size) }
     }
 
     @Test fun parentControlsAndMascotAreSeparateFromChildDestinations() {
@@ -61,7 +63,8 @@ class HomeAndGateRuntimeTest {
             } }
         }
         compose.onNodeWithText("Responsáveis").performClick()
-        compose.onNodeWithContentDescription("Nuvino, nosso mascote. Toque para dizer oi.").performClick()
+        compose.onNodeWithContentDescription("Simba, nosso mascote Shih-tzu. Toque para dizer oi.").performClick()
+        compose.onNodeWithText("Que bom ter você aqui!").assertExists()
         compose.runOnIdle {
             assertEquals(1, parentOpenCount)
             assertEquals(1, greetingCount)
